@@ -72,7 +72,7 @@ export default function Hero() {
               if (counter.current) counter.current.textContent = g.text.slice(0, Math.ceil(idx.i));
             },
           })
-          .to(counter.current, { autoAlpha: 0, duration: 0.3, ease: "power2.inOut" }, "+=0.25");
+          .to(counter.current, { autoAlpha: 0, duration: 0.3, ease: "power2.inOut" }, "+=0.35");
       });
 
       tl.to(loader.current, { yPercent: -100, duration: 1.1, ease: "power4.inOut" })
