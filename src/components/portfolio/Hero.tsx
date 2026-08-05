@@ -66,16 +66,16 @@ export default function Hero() {
           })
                     .to(idx, {
             i: g.text.length,
-            duration: 0.03 * g.text.length + 0.15,
+            duration: 0.04 * g.text.length + 0.15,
             ease: "none",
             onUpdate: () => {
               if (counter.current) counter.current.textContent = g.text.slice(0, Math.ceil(idx.i));
             },
           })
-          .to(counter.current, { autoAlpha: 0, duration: 0.2, ease: "power2.inOut" }, "+=0.25");
+          .to(counter.current, { autoAlpha: 0, duration: 0.3, ease: "power2.inOut" }, "+=0.25");
       });
 
-      tl.to(loader.current, { yPercent: -100, duration: 1.0, ease: "power4.inOut" })
+      tl.to(loader.current, { yPercent: -100, duration: 1.1, ease: "power4.inOut" })
         .to(
           chars,
           { autoAlpha: 1, yPercent: 0, duration: 1, ease: "power3.out", stagger: 0.045 },
