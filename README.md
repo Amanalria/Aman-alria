@@ -2,30 +2,26 @@
 
 # Aman Alria
 
-### Developer · Frontend Engineer · UI / UX Designer
+**Developer · Frontend Engineer · UI / UX Designer**
 
-**Personal Portfolio**
+India · Open to work
 
 </div>
-
----
-
-<br />
-
-<p align="center">
-  <em>"Design, code aur motion"</em>
-</p>
 
 <br />
 
 ## About
 
-Yeh **Aman Alria** ka personal portfolio website hai — ek highly animated, 3D-look, premium dark-themed digital experience. Ismein frontend engineering, motion design aur UI/UX ka combine craft dikhta hai. Built with a focus on performance, minimalism and real interactivity.
+Aman Alria is a developer and designer who builds real-world digital products end to end — across web, mobile and interactive interfaces. He treats design, code and motion as a single craft, shipping complete products rather than isolated screens. His work combines clean minimal interfaces with performant frontend engineering and meaningful animation.
 
-- **Theme:** Dark · Light-red accent · Parrot-green contact heading
-- **Motion:** GSAP scroll storytelling, Three.js ambience, scroll-scrub reveals
-- **Sections:** Hero · About · Selected Work · Skills · Experience · Contact
-- **Greeting intro:** Typed "hello ji" / "नमस्ते जी" loader
+<br />
+
+## What I Do
+
+- **Web & App Development** — End-to-end builds, from frontend to backend to deployment.
+- **Interactive & 3D Web** — GSAP scroll storytelling, WebGL scenes and motion systems that give products a premium feel.
+- **UI / UX Design** — Minimal, user-focused interfaces built to modern design standards.
+- **Brand Identity** — Complete visual identity systems that define and elevate a digital product.
 
 <br />
 
@@ -44,13 +40,13 @@ Yeh **Aman Alria** ka personal portfolio website hai — ek highly animated, 3D-
 
 ## Features
 
-- **Animated hero** — name reveal, mouse parallax, portrait drift-on-scroll
-- **3D ambience** — distorted spheres via React Three Fiber
-- **Accordion sections** — Work, Skills, Experience (all start closed)
-- **Scroll-scrub portrait** — About image scales subtly as you scroll
-- **Premium contact block** — centered portrait, "Hi" badge, gradient glow
-- **Fully responsive** — mobile-first, works on phone and desktop
-- **SEO ready** — meta tags, semantic HTML, Open Graph
+- Animated hero with name reveal, mouse parallax and scroll-driven portrait drift
+- 3D ambient scene rendered with React Three Fiber
+- Accordion-based Work, Skills and Experience sections (all start closed)
+- Scroll-scrub scaling on the About portrait
+- Premium contact block with centered portrait and gradient glow
+- Fully responsive — mobile-first, works across phone and desktop
+- SEO-ready with semantic HTML and Open Graph metadata
 
 <br />
 
@@ -73,7 +69,6 @@ src/
 
 ### Requirements
 - Node.js 18+ (recommended via [nvm](https://github.com/nvm-sh/nvm))
-- Bun (or npm)
 
 ### Install & run locally
 
@@ -84,7 +79,7 @@ bun install      # or: npm install
 bun run dev      # or: npm run dev
 ```
 
-Open `http://localhost:8080` in your browser.
+Then open `http://localhost:8080` in your browser.
 
 ### Build for production
 
@@ -96,29 +91,27 @@ bun run build    # or: npm run build
 
 ## Deployment
 
-Yeh project **Vercel** ke liye configured hai.
+This project is configured for **Vercel**.
 
-1. GitHub pe repo push karo.
-2. Vercel.com → **Add New → Project** → repo import karo.
-3. Settings `vercel.json` se automatically aa jayenge:
+1. Push the repository to GitHub.
+2. On Vercel: **Add New → Project** → import the repo.
+3. Settings are picked up automatically from `vercel.json`:
    - **Framework Preset:** Other
    - **Build Command:** `bun run build`
    - **Install Command:** `bun install`
-4. **Deploy** → live in 1–2 minutes.
-
-> Lovable preview ke alag se yeh apne Vercel domain pe chalega.
+4. Click **Deploy** — live in 1–2 minutes.
 
 <br />
 
 ## Customization
 
-Saara content — bio, skills, projects, experience, contact details — ek hi file mein hai:
+All content — bio, skills, projects, experience and contact details — lives in a single file:
 
 ```
 src/components/portfolio/data.ts
 ```
 
-Wahan edit karke text, links aur details update kar sakte ho. Colors aur design tokens `src/styles.css` mein defined hain.
+Edit it to update text, links and details. Colors and design tokens are defined in `src/styles.css`.
 
 <br />
 
@@ -129,7 +122,6 @@ Wahan edit karke text, links aur details update kar sakte ho. Colors aur design 
 **Aman Alria** — India · Open to work
 
 📧 [amanalria9@gmail.com](mailto:amanalria9@gmail.com)
-📱 [+91 70733 61989](tel:+917073361989)
 
 </div>
 
