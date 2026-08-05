@@ -24,21 +24,22 @@ export const profile = {
 export const services = [
   {
     title: "Website & App Development",
-    body: "Idea se launch tak — frontend, backend aur deployment ka full cycle development.",
+    body: "From idea to launch — full-cycle development covering frontend, backend and deployment.",
   },
   {
     title: "Interactive & 3D Web",
-    body: "GSAP scroll storytelling, WebGL scenes aur motion systems jo product ko premium feel dete hain.",
+    body: "GSAP scroll storytelling, WebGL scenes and motion systems that give a product its premium feel.",
   },
   {
     title: "UI / UX Design",
-    body: "Minimal, clean aur user-focused interfaces — modern design standards ke saath.",
+    body: "Minimal, clean and user-focused interfaces built to modern design standards.",
   },
   {
     title: "Brand Identity",
-    body: "Complete visual identity systems jo digital product ko define aur elevate karte hain.",
+    body: "Complete visual identity systems that define and elevate a digital product.",
   },
 ];
+
 
 export const skillGroups: { title: string; items: string[] }[] = [
   {
