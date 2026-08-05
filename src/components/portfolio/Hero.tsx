@@ -52,7 +52,7 @@ export default function Hero() {
 
       const greetings: { text: string; font: string }[] = [
         { text: "hello ji", font: "font-hand-en" },
-        { text: "नमस्ते जी", font: "font-hand-hi" },
+        { text: "नमस्ते", font: "font-hand-hi" },
       ];
 
       greetings.forEach((g) => {
@@ -64,18 +64,18 @@ export default function Hero() {
               counter.current.textContent = "";
             }
           })
-          .to(idx, {
+                    .to(idx, {
             i: g.text.length,
-            duration: 0.05 * g.text.length + 0.45,
+            duration: 0.03 * g.text.length + 0.15,
             ease: "none",
             onUpdate: () => {
               if (counter.current) counter.current.textContent = g.text.slice(0, Math.ceil(idx.i));
             },
           })
-          .to(counter.current, { autoAlpha: 0, duration: 0.35, ease: "power2.inOut" }, "+=0.55");
+          .to(counter.current, { autoAlpha: 0, duration: 0.2, ease: "power2.inOut" }, "+=0.25");
       });
 
-      tl.to(loader.current, { yPercent: -100, duration: 1.1, ease: "power4.inOut" })
+      tl.to(loader.current, { yPercent: -100, duration: 1.0, ease: "power4.inOut" })
         .to(
           chars,
           { autoAlpha: 1, yPercent: 0, duration: 1, ease: "power3.out", stagger: 0.045 },
