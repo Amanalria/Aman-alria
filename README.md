@@ -13,7 +13,7 @@
 <br />
 
 <p align="center">
-  <em>"Design, code aur motion — teeno ko ek craft maanta hoon. Isolated screens nahi, poora product banata hoon."</em>
+  <em>"Design, code aur motion"</em>
 </p>
 
 <br />
