@@ -15,6 +15,7 @@ export default function Hero() {
   const section = useRef<HTMLDivElement>(null);
   const heading = useRef<HTMLDivElement>(null);
   const img = useRef<HTMLDivElement>(null);
+  const imgDrift = useRef<HTMLDivElement>(null);
   const stroke1 = useRef<HTMLDivElement>(null);
   const stroke2 = useRef<HTMLDivElement>(null);
   const loader = useRef<HTMLDivElement>(null);
@@ -52,7 +53,7 @@ export default function Hero() {
 
       const greetings: { text: string; font: string }[] = [
         { text: "hello ji", font: "font-hand-en" },
-        { text: "नमस्ते", font: "font-hand-hi" },
+        { text: "नमस्ते जी", font: "font-hand-hi" },
       ];
 
       greetings.forEach((g) => {
@@ -66,13 +67,13 @@ export default function Hero() {
           })
           .to(idx, {
             i: g.text.length,
-            duration: 0.04 * g.text.length + 0.45,
+            duration: 0.05 * g.text.length + 0.45,
             ease: "none",
             onUpdate: () => {
               if (counter.current) counter.current.textContent = g.text.slice(0, Math.ceil(idx.i));
             },
           })
-          .to(counter.current, { autoAlpha: 0, duration: 0.3, ease: "power2.inOut" }, "+=0.30");
+          .to(counter.current, { autoAlpha: 0, duration: 0.35, ease: "power2.inOut" }, "+=0.55");
       });
 
       tl.to(loader.current, { yPercent: -100, duration: 1.1, ease: "power4.inOut" })
@@ -105,14 +106,30 @@ export default function Hero() {
         scrollTrigger: { trigger: section.current, start: "top top", end: "+=280", scrub: true },
       });
 
-      // Depth parallax: the silhouette drifts gently upward and the giant name
-      // stays slightly behind it, so the portrait always reads above the text.
-      gsap.to(".hero-parallax-img", {
-        yPercent: -26,
-        scale: 1.05,
-        ease: "none",
-        scrollTrigger: { trigger: section.current, start: "top top", end: "bottom top", scrub: 0.6 },
-      });
+      // Portrait scroll drift lives on an inner wrapper, so it always scrubs
+      // back to exactly 0 (its intro position) when you scroll to the top.
+      gsap.fromTo(
+        imgDrift.current,
+        { yPercent: 0 },
+        {
+          yPercent: -5,
+          ease: "none",
+          immediateRender: false,
+          scrollTrigger: {
+            trigger: section.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: 1.2,
+            invalidateOnRefresh: true,
+          },
+        },
+      );
+
+
+
+
+
+
       gsap.to(".hero-parallax-head", {
         yPercent: 2,
         ease: "none",
@@ -185,15 +202,16 @@ export default function Hero() {
 
 
 
-        {/* back stroke */}
-        <div data-depth="0.2" className="absolute inset-0 z-[4]">
+        {/* upper stroke — behind the portrait */}
+        <div data-depth="0.3" className="absolute inset-0 z-[4]">
           <div
             ref={stroke2}
-            className="absolute top-[34%] right-[8%] overflow-hidden md:top-[30%] md:right-[16%]"
+            className="absolute top-[26%] right-[6%] max-w-[88vw] overflow-hidden md:top-[23%] md:right-[14%]"
           >
-            <img src={stroke} alt="" className="no-drag w-full opacity-70" />
+            <img src={stroke} alt="" className="no-drag w-full opacity-100" />
           </div>
         </div>
+
 
         {/* giant name */}
         <div data-depth="0.08" className="absolute inset-0 z-[5] flex items-center justify-center">
@@ -210,39 +228,52 @@ export default function Hero() {
         </div>
 
         {/* portrait silhouette */}
-        <div data-depth="0.45" className="absolute inset-0 z-10 flex items-end justify-center">
-          <div ref={img} className="hero-parallax-img h-[78%] origin-bottom will-change-transform md:h-[90%]">
-            <img
-              src={silhouette}
-              alt="Aman Alria portrait silhouette"
-              className="no-drag h-full w-auto object-contain object-bottom"
-            />
+        <div className="absolute inset-0 z-10 flex items-end justify-center">
+          <div ref={img} className="relative h-[78%] origin-bottom will-change-transform md:h-[90%]">
+            <div ref={imgDrift} className="h-full will-change-transform">
+              <img
+                src={silhouette}
+                alt="Aman Alria portrait silhouette"
+                className="no-drag h-full w-auto object-contain object-bottom"
+              />
+            </div>
+          </div>
+
+        </div>
+
+        {/* full-width soft fade where the portrait ends */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[11] h-[26%] bg-gradient-to-t from-black via-black/45 to-transparent"
+        />
+
+
+        {/* lower stroke — in the foreground (over the portrait) */}
+        <div data-depth="0.2" className="absolute inset-0 z-[12]">
+          <div
+            ref={stroke1}
+            className="absolute bottom-[22%] left-0 max-w-[96vw] overflow-hidden md:bottom-[26%] md:left-[4%]"
+          >
+            <img src={stroke} alt="" className="no-drag w-full opacity-100" />
           </div>
         </div>
 
-        {/* front stroke */}
-        <div data-depth="0.3" className="absolute inset-0 z-[11]">
-          <div
-            ref={stroke1}
-            className="absolute bottom-[22%] left-[4%] overflow-hidden md:bottom-[26%] md:left-[12%]"
-          >
-            <img src={stroke} alt="" className="no-drag w-full opacity-80" />
-          </div>
-        </div>
+
 
         {/* hero meta */}
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-5 pb-7 md:px-10 md:pb-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
-            <p className="hero-meta max-w-[16rem] translate-y-3 text-xs leading-relaxed text-muted-foreground opacity-0 md:max-w-xs md:text-sm">
+            <p className="hero-meta text-ink-foreground/75 max-w-[16rem] translate-y-3 text-xs leading-relaxed opacity-0 md:max-w-xs md:text-sm">
               {profile.shortRole}
             </p>
-            <div className="hero-meta flex translate-y-3 items-center gap-3 text-xs tracking-[0.2em] text-subtle uppercase opacity-0">
+            <div className="hero-meta text-ink-foreground/70 flex translate-y-3 items-center gap-3 text-xs tracking-[0.2em] uppercase opacity-0">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
               {profile.location}
             </div>
-            <p className="hero-meta hidden translate-y-3 text-xs tracking-[0.2em] text-subtle uppercase opacity-0 md:block">
+            <p className="hero-meta text-ink-foreground/70 hidden translate-y-3 text-xs tracking-[0.2em] uppercase opacity-0 md:block">
               Scroll to explore
             </p>
+
           </div>
           <div ref={endLine} className="hairline mt-6 opacity-0" />
         </div>
