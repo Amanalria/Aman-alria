@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { createFileRoute, ClientOnly } from "@tanstack/react-router";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
+
+const Globe = lazy(() => import("@/components/portfolio/Globe"));
 import Hero from "@/components/portfolio/Hero";
 import About from "@/components/portfolio/About";
 import Accordion from "@/components/portfolio/Accordion";
@@ -277,12 +279,28 @@ function Contact() {
     <section id="contact" className="relative scroll-mt-24 pb-10 md:pb-16">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[42rem] w-full"
-        style={{
-          background:
-            "linear-gradient(to bottom, color-mix(in oklab, var(--color-accent) 7%, transparent) 0%, color-mix(in oklab, var(--color-accent) 3.5%, transparent) 45%, transparent 100%)",
-        }}
-      />
+        className="pointer-events-none absolute inset-x-0 top-0 flex h-[42rem] w-full items-center justify-center overflow-hidden"
+      >
+        <div className="h-[150vw] max-h-[52rem] w-[150vw] max-w-[52rem] opacity-70 md:h-[50rem] md:w-[50rem]">
+          <ClientOnly fallback={null}>
+            <Suspense fallback={null}>
+              <Globe
+                speed={1.6}
+                scale={9}
+                detail={4}
+                fill="dots"
+                dots={{ color: "#ef4444", size: 6, density: 8, allDots: false }}
+                oceanColor="rgba(0,0,0,0)"
+                showOutline={false}
+                showGrid
+                graticuleColor="rgba(239,68,68,0.16)"
+                stopOnHover={false}
+                markerConfig={{ markers: [{ lat: 26.9, lng: 75.8 }], color: "#ef4444", size: 55 }}
+              />
+            </Suspense>
+          </ClientOnly>
+        </div>
+      </div>
       <div className="relative mx-auto max-w-[1400px] px-5 py-16 text-center md:px-10 md:py-24">
 
 
