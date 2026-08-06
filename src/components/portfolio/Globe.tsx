@@ -17,7 +17,7 @@ import {
   Vector3,
   CanvasTexture,
 } from "three";
-import { geoEquirectangular, geoPath } from "d3-geo";
+
 
 type Rgba = { r: number; g: number; b: number; a: number };
 
@@ -299,18 +299,37 @@ export default function Globe({
         offscreen.height = bitmapHeight;
         const ctx = offscreen.getContext("2d", { willReadFrequently: true });
         if (!ctx) throw new Error("Canvas not supported");
-        const projection = geoEquirectangular().fitSize([bitmapWidth, bitmapHeight], {
-          type: "Sphere",
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
-        const pathGenerator = geoPath().projection(projection).context(ctx);
+        // Plain equirectangular projection + manual GeoJSON path drawing
+        // (avoids the d3-geo dependency entirely).
+        const projectX = (lng: number) => ((lng + 180) / 360) * bitmapWidth;
+        const projectY = (lat: number) => ((90 - lat) / 180) * bitmapHeight;
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, bitmapWidth, bitmapHeight);
         ctx.fillStyle = "#fff";
         ctx.beginPath();
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        landFeatures.features.forEach((f: any) => pathGenerator(f));
+        const traceRing = (ring: any) => {
+          if (!ring?.length) return;
+          ring.forEach((coord: [number, number], i: number) => {
+            const x = projectX(coord[0]);
+            const y = projectY(coord[1]);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.closePath();
+        };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        landFeatures.features.forEach((f: any) => {
+          const g = f?.geometry;
+          if (!g?.coordinates) return;
+          if (g.type === "Polygon") g.coordinates.forEach(traceRing);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          else if (g.type === "MultiPolygon")
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            g.coordinates.forEach((poly: any) => poly.forEach(traceRing));
+        });
         ctx.fill();
+
         const pixels = ctx.getImageData(0, 0, bitmapWidth, bitmapHeight).data;
         const isOnLand = (lng: number, lat: number) => {
           const x = Math.round(((lng + 180) / 360) * bitmapWidth) % bitmapWidth;
