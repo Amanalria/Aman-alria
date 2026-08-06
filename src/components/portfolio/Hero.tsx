@@ -76,7 +76,7 @@ export default function Hero() {
           .to(counter.current, { autoAlpha: 0, duration: 0.3, ease: "power2.inOut" }, "+=0.30");
       });
 
-      tl.to(loader.current, { yPercent: -100, duration: 1.1, ease: "power4.inOut" })
+      tl.to(loader.current, { yPercent: -100, duration: 1.0, ease: "power4.inOut" })
         .to(
           chars,
           { autoAlpha: 1, yPercent: 0, duration: 1, ease: "power3.out", stagger: 0.045 },
