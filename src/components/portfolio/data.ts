@@ -11,7 +11,6 @@ export const profile = {
   clients: "18",
     intro: [
     "I'm Aman — a developer and designer who likes building things that actually work, not just things that look good in a mockup.",
-    "I move between design and code all day, so I care about both the pixel and the payload: how a layout feels, how fast it loads, how it behaves in someone's hand at 2am on a slow connection.",
     "Most of my work sits somewhere between interface and interaction — clean systems, deliberate motion, and details you notice only when they're missing. I ship the whole thing, front to back, and I stay until it feels right.",
   ],
 
