@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, RotateCcw, Sparkles, User, ArrowDown } from "lucide-react";
+import { MessageSquare, X, Send, ChevronDown } from "lucide-react";
 import portrait from "@/assets/portrait.jpg";
 
 interface Message {
@@ -11,14 +11,14 @@ interface Message {
 const INITIAL_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Hey! 👋 I'm Aman Alria's AI assistant. Ask me anything about my web & app builds, 3D/animation work, skills, or how we can work together!",
+    "Hey, I am Aman Alria's AI assistant. Ask me anything about my web and app builds, 3D work, skills, or how we can collaborate.",
 };
 
 const SUGGESTIONS = [
-  "🛠️ What's your core tech stack?",
-  "🚀 Tell me about your projects",
-  "💼 How can I hire you for a build?",
-  "✨ Do you build 3D & GSAP sites?",
+  "What is your core tech stack?",
+  "Tell me about your projects",
+  "How can I hire you for a project?",
+  "Do you build 3D and animated websites?",
 ];
 
 export default function AmanChatbot() {
@@ -27,6 +27,10 @@ export default function AmanChatbot() {
   const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+
+  const modalRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -42,6 +46,65 @@ export default function AmanChatbot() {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen, messages]);
+
+  // Prevent background page from scrolling when touching or scrolling inside chatbox
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const modalEl = modalRef.current;
+    const messagesEl = messagesContainerRef.current;
+    if (!modalEl || !messagesEl) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      const isAtTop = messagesEl.scrollTop <= 0;
+      const isAtBottom =
+        messagesEl.scrollHeight - messagesEl.scrollTop <= messagesEl.clientHeight + 1;
+
+      if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+        e.preventDefault();
+      }
+      e.stopPropagation();
+    };
+
+    let startY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      startY = e.touches[0].clientY;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const currentY = e.touches[0].clientY;
+      const isScrollingUp = currentY > startY;
+      const isScrollingDown = currentY < startY;
+
+      const isAtTop = messagesEl.scrollTop <= 0;
+      const isAtBottom =
+        messagesEl.scrollHeight - messagesEl.scrollTop <= messagesEl.clientHeight + 1;
+
+      // Check if touch target is inside input or non-scrollable area
+      const isScrollArea = messagesEl.contains(e.target as Node);
+
+      if (!isScrollArea) {
+        if (e.cancelable) e.preventDefault();
+        e.stopPropagation();
+        return;
+      }
+
+      if ((isAtTop && isScrollingUp) || (isAtBottom && isScrollingDown)) {
+        if (e.cancelable) e.preventDefault();
+      }
+      e.stopPropagation();
+    };
+
+    modalEl.addEventListener("wheel", handleWheel, { passive: false });
+    modalEl.addEventListener("touchstart", handleTouchStart, { passive: true });
+    modalEl.addEventListener("touchmove", handleTouchMove, { passive: false });
+
+    return () => {
+      modalEl.removeEventListener("wheel", handleWheel);
+      modalEl.removeEventListener("touchstart", handleTouchStart);
+      modalEl.removeEventListener("touchmove", handleTouchMove);
+    };
+  }, [isOpen]);
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend ?? input).trim();
@@ -95,7 +158,7 @@ export default function AmanChatbot() {
               {
                 role: "system",
                 content:
-                  "You are Aman Alria — developer, frontend engineer, and UI/UX designer on your portfolio site (amanalria.in). Talk in first-person as Aman Alria. Contact: amanalria9@gmail.com / +91 70733 61989. Keep responses friendly, modern, concise and direct.",
+                  "You are Aman Alria — developer, frontend engineer, and UI/UX designer on your portfolio site (amanalria.in). Talk in first-person as Aman Alria. Contact: amanalria9@gmail.com / +91 70733 61989. NEVER use any emojis or emoji icons under any circumstances. Keep responses completely clean, professional, and composed of pure text.",
               },
               ...newMessages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
             ],
@@ -108,18 +171,21 @@ export default function AmanChatbot() {
           };
           replyText =
             directData?.choices?.[0]?.message?.content ??
-            "Hey! Thanks for reaching out. Feel free to contact me directly at amanalria9@gmail.com or call +91 70733 61989!";
+            "Thanks for reaching out. Feel free to contact me directly at amanalria9@gmail.com or call +91 70733 61989.";
         }
       }
 
       if (!replyText) {
         replyText =
-          "Thanks for visiting! I'd love to chat about your project. Please email me directly at amanalria9@gmail.com or call +91 70733 61989.";
+          "Thanks for visiting. I would love to discuss your project. Please email me directly at amanalria9@gmail.com or call +91 70733 61989.";
       }
+
+      // Ensure no emojis in response text
+      const cleanReply = replyText.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "");
 
       const assistantMsg: Message = {
         role: "assistant",
-        content: replyText,
+        content: cleanReply.trim() || replyText,
         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
 
@@ -132,16 +198,12 @@ export default function AmanChatbot() {
         {
           role: "assistant",
           content:
-            "I'm having a brief connection delay with my AI backend. You can always email me directly at amanalria9@gmail.com or call +91 70733 61989!",
+            "I am having a connection delay with the AI server. You can reach me directly at amanalria9@gmail.com or call +91 70733 61989.",
         },
       ]);
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleReset = () => {
-    setMessages([INITIAL_MESSAGE]);
   };
 
   return (
@@ -176,7 +238,7 @@ export default function AmanChatbot() {
                   </span>
                 )}
               </div>
-              {/* Green online badge */}
+              {/* Green online dot */}
               <span className="absolute bottom-1 right-1 block h-3.5 w-3.5 rounded-full border-2 border-background bg-emerald-500" />
             </>
           )}
@@ -186,9 +248,10 @@ export default function AmanChatbot() {
       {/* Floating Chat Modal (Non-Fullscreen, Sleek Box) */}
       {isOpen && (
         <div
+          ref={modalRef}
           role="dialog"
           aria-label="Aman Alria AI Chat"
-          className="fixed bottom-24 right-4 sm:right-6 z-[100] flex w-[calc(100vw-2rem)] max-w-[380px] h-[520px] max-h-[82vh] flex-col overflow-hidden rounded-2xl border border-border/70 bg-card text-card-foreground shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-250"
+          className="fixed bottom-24 right-4 sm:right-6 z-[100] flex w-[calc(100vw-2rem)] max-w-[380px] h-[520px] max-h-[82vh] flex-col overflow-hidden rounded-2xl border border-border/70 bg-card text-card-foreground shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-250 overscroll-contain"
         >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-4 py-3.5 backdrop-blur-md">
@@ -199,32 +262,18 @@ export default function AmanChatbot() {
                   alt="Aman Alria"
                   className="h-full w-full object-cover"
                   onError={(e) => {
-                    // Fallback avatar icon
                     e.currentTarget.style.display = "none";
                   }}
                 />
                 <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500" />
               </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="text-sm font-semibold text-foreground">Aman Alria</h3>
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
-                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-                  Online · Digital Twin
-                </p>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground">Aman Alria</h3>
+                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <button
-                onClick={handleReset}
-                title="Reset conversation"
-                className="rounded-lg p-1.5 hover:bg-muted hover:text-foreground transition-colors"
-              >
-                <RotateCcw className="h-4 w-4" />
-              </button>
+            <div className="flex items-center text-muted-foreground">
               <button
                 onClick={() => setIsOpen(false)}
                 title="Close chat"
@@ -235,8 +284,11 @@ export default function AmanChatbot() {
             </div>
           </div>
 
-          {/* Messages Scroll Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-sm">
+          {/* Messages Scroll Area with overscroll containment */}
+          <div
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto p-4 space-y-3.5 text-sm overscroll-contain touch-pan-y"
+          >
             {messages.map((msg, index) => {
               const isUser = msg.role === "user";
               return (
@@ -262,23 +314,38 @@ export default function AmanChatbot() {
               );
             })}
 
-            {/* Quick Suggestions (show only if conversation just started) */}
+            {/* Collapsible Suggestions Dropdown */}
             {messages.length === 1 && (
               <div className="pt-2">
-                <p className="mb-2 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                  Suggested Questions:
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {SUGGESTIONS.map((s, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleSend(s.replace(/^[^\s]+\s/, ""))}
-                      className="rounded-full border border-border/80 bg-background/80 px-2.5 py-1 text-xs text-foreground/80 hover:bg-muted hover:text-foreground hover:border-primary/50 transition-all text-left"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsSuggestionsOpen((prev) => !prev)}
+                  className="flex items-center justify-between w-full rounded-xl border border-border/80 bg-background/70 px-3 py-2 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all text-left"
+                >
+                  <span>Suggested questions</span>
+                  <ChevronDown
+                    className={`h-3.5 w-3.5 transition-transform duration-200 ${
+                      isSuggestionsOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {isSuggestionsOpen && (
+                  <div className="flex flex-col gap-1.5 mt-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                    {SUGGESTIONS.map((s, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          handleSend(s);
+                          setIsSuggestionsOpen(false);
+                        }}
+                        className="rounded-lg border border-border/70 bg-background/90 px-3 py-2 text-xs text-foreground/90 hover:bg-muted hover:border-primary/50 transition-all text-left"
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -294,7 +361,9 @@ export default function AmanChatbot() {
                   className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
                   style={{ animationDelay: "300ms" }}
                 ></span>
-                <span className="ml-1 text-xs font-medium text-muted-foreground">Aman is typing...</span>
+                <span className="ml-1 text-xs font-medium text-muted-foreground">
+                  Aman is typing...
+                </span>
               </div>
             )}
 
@@ -329,8 +398,8 @@ export default function AmanChatbot() {
               </button>
             </form>
             <div className="mt-2 text-center">
-              <span className="text-[10px] text-muted-foreground/80">
-                Powered by Gemini Web2API on AWS · amanalria.in
+              <span className="text-[10px] text-muted-foreground/80 font-medium tracking-wide">
+                amanalria.in
               </span>
             </div>
           </div>
