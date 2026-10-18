@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, ChevronDown } from "lucide-react";
+import { X, Send, ChevronDown } from "lucide-react";
 import portrait from "@/assets/portrait.jpg";
+import { RobotHead } from "./robot-heads/RobotHead";
 
 interface Message {
   role: "user" | "assistant";
@@ -149,6 +150,7 @@ export default function AmanChatbot() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-Portfolio-Key": "aman-sec-pt-8e4b2d19f3a67c5e",
             Origin: window.location.origin,
           },
           body: JSON.stringify({
@@ -212,10 +214,6 @@ export default function AmanChatbot() {
       <div className="fixed bottom-5 right-5 z-[100] flex flex-col items-end">
         {!isOpen && (
           <div className="mb-2 hidden sm:flex items-center gap-2 rounded-full border border-border/80 bg-background/95 px-3 py-1.5 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-            </span>
             <span className="text-xs font-medium text-foreground/80">Chat with Aman</span>
           </div>
         )}
@@ -223,24 +221,32 @@ export default function AmanChatbot() {
         <button
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? "Close chat" : "Open chat with Aman"}
-          className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-primary/30 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+          className="group relative flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none"
         >
           {isOpen ? (
-            <X className="h-6 w-6 transition-transform duration-200 group-hover:rotate-90" />
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-card/90 border border-border/80 shadow-2xl backdrop-blur-md text-foreground hover:bg-muted transition-all">
+              <X className="h-6 w-6 transition-transform duration-200 group-hover:rotate-90" />
+            </div>
           ) : (
-            <>
-              <div className="relative">
-                <MessageSquare className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
-                {hasUnread && (
-                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
-                    <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500"></span>
-                  </span>
-                )}
-              </div>
-              {/* Green online dot */}
-              <span className="absolute bottom-1 right-1 block h-3.5 w-3.5 rounded-full border-2 border-background bg-emerald-500" />
-            </>
+            <div className="relative flex items-center justify-center filter drop-shadow-[0_8px_20px_rgba(200,55,45,0.4)]">
+              <RobotHead
+                shape="rectangle"
+                state={isLoading ? "thinking" : "happy"}
+                size={70}
+                color="#c8372d"
+                trimColor="#2a2c31"
+                screenColor="#e8f2ff"
+                interactive
+                antenna
+                floorShadow={false}
+              />
+              {hasUnread && (
+                <span className="absolute top-1 right-1 flex h-3 w-3">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500"></span>
+                </span>
+              )}
+            </div>
           )}
         </button>
       </div>
@@ -265,11 +271,9 @@ export default function AmanChatbot() {
                     e.currentTarget.style.display = "none";
                   }}
                 />
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500" />
               </div>
               <div className="flex items-center gap-2">
                 <h3 className="text-sm font-semibold text-foreground">Aman Alria</h3>
-                <span className="inline-block h-2 w-2 rounded-full bg-emerald-500"></span>
               </div>
             </div>
 

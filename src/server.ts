@@ -85,6 +85,7 @@ export default {
               "Content-Type": "application/json",
               "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AmanAlriaPortfolio/1.0",
               "Origin": "https://amanalria.in",
+              "X-Portfolio-Key": process.env["PORTFOLIO_CHAT_KEY"] || "aman-sec-pt-8e4b2d19f3a67c5e",
             },
             body: JSON.stringify({
               model: "gemini-3.1-pro",
