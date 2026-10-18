@@ -5,6 +5,7 @@ const Globe = lazy(() => import("@/components/portfolio/Globe"));
 import Hero from "@/components/portfolio/Hero";
 import About from "@/components/portfolio/About";
 import Accordion from "@/components/portfolio/Accordion";
+import AmanChatbot from "@/components/portfolio/AmanChatbot";
 import portrait from "@/assets/portrait.jpg";
 import { profile, skillGroups, projects, experience } from "@/components/portfolio/data";
 
@@ -89,6 +90,9 @@ function Index() {
       <Experience />
       <Contact />
       <Footer />
+      <ClientOnly>
+        <AmanChatbot />
+      </ClientOnly>
     </div>
   );
 }

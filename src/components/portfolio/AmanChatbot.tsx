@@ -1,0 +1,341 @@
+import { useState, useRef, useEffect } from "react";
+import { MessageSquare, X, Send, RotateCcw, Sparkles, User, ArrowDown } from "lucide-react";
+import portrait from "@/assets/portrait.jpg";
+
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+  time?: string;
+}
+
+const INITIAL_MESSAGE: Message = {
+  role: "assistant",
+  content:
+    "Hey! 👋 I'm Aman Alria's AI assistant. Ask me anything about my web & app builds, 3D/animation work, skills, or how we can work together!",
+};
+
+const SUGGESTIONS = [
+  "🛠️ What's your core tech stack?",
+  "🚀 Tell me about your projects",
+  "💼 How can I hire you for a build?",
+  "✨ Do you build 3D & GSAP sites?",
+];
+
+export default function AmanChatbot() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([INITIAL_MESSAGE]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      scrollToBottom();
+      setHasUnread(false);
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [isOpen, messages]);
+
+  const handleSend = async (textToSend?: string) => {
+    const text = (textToSend ?? input).trim();
+    if (!text || isLoading) return;
+
+    const userMsg: Message = {
+      role: "user",
+      content: text,
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    };
+
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      // 1. Try local serverless API route first (/api/chat)
+      let replyText = "";
+      try {
+        const res = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: newMessages.map((m) => ({ role: m.role, content: m.content })),
+          }),
+        });
+
+        if (res.ok) {
+          const data = (await res.json()) as { reply?: string };
+          if (data?.reply) {
+            replyText = data.reply;
+          }
+        }
+      } catch (e) {
+        console.warn("Direct /api/chat error, trying HiveCloud fallback", e);
+      }
+
+      // 2. Fallback to HiveCloud AWS proxy directly if /api/chat didn't respond
+      if (!replyText) {
+        const directRes = await fetch("https://hivecloud.in/api/chat.php", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Origin: window.location.origin,
+          },
+          body: JSON.stringify({
+            model: "gemini-3.1-pro",
+            stream: false,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are Aman Alria — developer, frontend engineer, and UI/UX designer on your portfolio site (amanalria.in). Talk in first-person as Aman Alria. Contact: amanalria9@gmail.com / +91 70733 61989. Keep responses friendly, modern, concise and direct.",
+              },
+              ...newMessages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
+            ],
+          }),
+        });
+
+        if (directRes.ok) {
+          const directData = (await directRes.json()) as {
+            choices?: { message?: { content?: string } }[];
+          };
+          replyText =
+            directData?.choices?.[0]?.message?.content ??
+            "Hey! Thanks for reaching out. Feel free to contact me directly at amanalria9@gmail.com or call +91 70733 61989!";
+        }
+      }
+
+      if (!replyText) {
+        replyText =
+          "Thanks for visiting! I'd love to chat about your project. Please email me directly at amanalria9@gmail.com or call +91 70733 61989.";
+      }
+
+      const assistantMsg: Message = {
+        role: "assistant",
+        content: replyText,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      };
+
+      setMessages((prev) => [...prev, assistantMsg]);
+      if (!isOpen) setHasUnread(true);
+    } catch (err) {
+      console.error("Chat error:", err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content:
+            "I'm having a brief connection delay with my AI backend. You can always email me directly at amanalria9@gmail.com or call +91 70733 61989!",
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReset = () => {
+    setMessages([INITIAL_MESSAGE]);
+  };
+
+  return (
+    <>
+      {/* Floating Trigger Button (Bottom Right) */}
+      <div className="fixed bottom-5 right-5 z-[100] flex flex-col items-end">
+        {!isOpen && (
+          <div className="mb-2 hidden sm:flex items-center gap-2 rounded-full border border-border/80 bg-background/95 px-3 py-1.5 shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+            </span>
+            <span className="text-xs font-medium text-foreground/80">Chat with Aman</span>
+          </div>
+        )}
+
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close chat" : "Open chat with Aman"}
+          className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xl transition-all duration-300 hover:scale-105 hover:shadow-primary/30 active:scale-95 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+        >
+          {isOpen ? (
+            <X className="h-6 w-6 transition-transform duration-200 group-hover:rotate-90" />
+          ) : (
+            <>
+              <div className="relative">
+                <MessageSquare className="h-6 w-6 transition-transform duration-200 group-hover:scale-110" />
+                {hasUnread && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-500"></span>
+                  </span>
+                )}
+              </div>
+              {/* Green online badge */}
+              <span className="absolute bottom-1 right-1 block h-3.5 w-3.5 rounded-full border-2 border-background bg-emerald-500" />
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Floating Chat Modal (Non-Fullscreen, Sleek Box) */}
+      {isOpen && (
+        <div
+          role="dialog"
+          aria-label="Aman Alria AI Chat"
+          className="fixed bottom-24 right-4 sm:right-6 z-[100] flex w-[calc(100vw-2rem)] max-w-[380px] h-[520px] max-h-[82vh] flex-col overflow-hidden rounded-2xl border border-border/70 bg-card text-card-foreground shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-4 duration-250"
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border/60 bg-muted/40 px-4 py-3.5 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+              <div className="relative h-10 w-10 overflow-hidden rounded-full border border-border/80 shadow-sm">
+                <img
+                  src={portrait}
+                  alt="Aman Alria"
+                  className="h-full w-full object-cover"
+                  onError={(e) => {
+                    // Fallback avatar icon
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-sm font-semibold text-foreground">Aman Alria</h3>
+                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                </div>
+                <p className="text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+                  <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                  Online · Digital Twin
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <button
+                onClick={handleReset}
+                title="Reset conversation"
+                className="rounded-lg p-1.5 hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                title="Close chat"
+                className="rounded-lg p-1.5 hover:bg-muted hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Messages Scroll Area */}
+          <div className="flex-1 overflow-y-auto p-4 space-y-3.5 text-sm">
+            {messages.map((msg, index) => {
+              const isUser = msg.role === "user";
+              return (
+                <div
+                  key={index}
+                  className={`flex flex-col ${isUser ? "items-end" : "items-start"}`}
+                >
+                  <div
+                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 leading-relaxed whitespace-pre-wrap ${
+                      isUser
+                        ? "bg-primary text-primary-foreground rounded-br-xs shadow-sm font-normal"
+                        : "bg-muted/70 text-foreground border border-border/50 rounded-bl-xs shadow-xs font-normal"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                  {msg.time && (
+                    <span className="mt-1 px-1 text-[10px] text-muted-foreground/70">
+                      {msg.time}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Quick Suggestions (show only if conversation just started) */}
+            {messages.length === 1 && (
+              <div className="pt-2">
+                <p className="mb-2 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                  Suggested Questions:
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SUGGESTIONS.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSend(s.replace(/^[^\s]+\s/, ""))}
+                      className="rounded-full border border-border/80 bg-background/80 px-2.5 py-1 text-xs text-foreground/80 hover:bg-muted hover:text-foreground hover:border-primary/50 transition-all text-left"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Loading Typing Indicator */}
+            {isLoading && (
+              <div className="flex items-center gap-1.5 rounded-2xl rounded-bl-xs border border-border/50 bg-muted/70 px-4 py-3 text-muted-foreground w-fit animate-pulse">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"></span>
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                ></span>
+                <span
+                  className="h-1.5 w-1.5 rounded-full bg-primary animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                ></span>
+                <span className="ml-1 text-xs font-medium text-muted-foreground">Aman is typing...</span>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input Box */}
+          <div className="border-t border-border/60 bg-background/80 p-3 backdrop-blur-md">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSend();
+              }}
+              className="flex items-center gap-2"
+            >
+              <input
+                ref={inputRef}
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask Aman anything..."
+                disabled={isLoading}
+                className="flex-1 rounded-xl border border-input bg-card px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary transition-all disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={!input.trim() || isLoading}
+                aria-label="Send message"
+                className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <Send className="h-4 w-4" />
+              </button>
+            </form>
+            <div className="mt-2 text-center">
+              <span className="text-[10px] text-muted-foreground/80">
+                Powered by Gemini Web2API on AWS · amanalria.in
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
